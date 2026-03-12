@@ -1,0 +1,28 @@
+# NASA APOD Wallpaper .gitignore
+
+# Config files with API keys
+config.json
+.nasa_apod_wallpapers/
+
+# Logs
+*.log
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
