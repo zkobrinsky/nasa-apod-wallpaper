@@ -11,7 +11,7 @@ import urllib.request
 import urllib.error
 from pathlib import Path
 import subprocess
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Directory to store downloaded wallpapers and config
 WALLPAPER_DIR = Path.home() / ".nasa_apod_wallpapers"
@@ -100,6 +100,36 @@ def fetch_apod_data(date=None):
         sys.exit(1)
 
 
+def fetch_apod_with_fallback(date=None):
+    """Fetch APOD data with fallback to yesterday if today isn't available"""
+    # If a specific date was requested, just fetch that
+    if date:
+        return fetch_apod_data(date)
+
+    # Try today first
+    today = datetime.now().strftime('%Y-%m-%d')
+    try:
+        print(f"Fetching NASA APOD data for today ({today})...")
+        url = APOD_API_URL + f"&date={today}"
+        with urllib.request.urlopen(url, timeout=10) as response:
+            data = json.loads(response.read().decode())
+        return data
+    except urllib.error.HTTPError as e:
+        # If today fails (likely not published yet), try yesterday
+        if e.code == 500:
+            yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+            print(f"Today's APOD not available yet, fetching yesterday ({yesterday})...")
+            return fetch_apod_data(yesterday)
+        else:
+            print(f"HTTP Error {e.code}: {e.reason}")
+            sys.exit(1)
+    except Exception as e:
+        # Try yesterday as fallback for any error
+        yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+        print(f"Could not fetch today's APOD, fetching yesterday ({yesterday})...")
+        return fetch_apod_data(yesterday)
+
+
 def download_image(url, filename):
     """Download the image from the given URL"""
     try:
@@ -171,8 +201,8 @@ def main():
         date = sys.argv[1]
         print(f"Requesting APOD for date: {date}")
 
-    # Fetch APOD data
-    apod_data = fetch_apod_data(date)
+    # Fetch APOD data (with fallback to yesterday if today isn't available)
+    apod_data = fetch_apod_with_fallback(date)
 
     # Display info about today's APOD
     print(f"\nTitle: {apod_data.get('title', 'N/A')}")
