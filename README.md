@@ -13,7 +13,8 @@ Automatically set NASA's Astronomy Picture of the Day as your macOS desktop wall
 - ⏰ Optional daily auto-update via LaunchAgent
 - 🧠 Smart fallback: tries today, uses yesterday if not available yet
 - 🧹 Auto-cleanup keeps only the last 30 wallpapers
-- 📝 Shows image title and description
+- 🔔 System notifications with image title and description
+- 📝 Shows full image details in terminal
 
 ## Quick Start
 

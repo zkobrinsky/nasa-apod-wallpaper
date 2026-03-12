@@ -160,6 +160,45 @@ def set_macos_wallpaper(image_path):
         sys.exit(1)
 
 
+def send_notification(title, description):
+    """Send a macOS notification with the APOD details"""
+    try:
+        # Truncate description to first 200 chars or first sentence
+        desc_short = description[:200]
+        if len(description) > 200:
+            # Try to end at a sentence
+            last_period = desc_short.rfind('. ')
+            if last_period > 100:  # Only truncate at sentence if it's reasonable length
+                desc_short = desc_short[:last_period + 1]
+            else:
+                desc_short += "..."
+
+        # Try terminal-notifier first (if installed via Homebrew)
+        try:
+            subprocess.run([
+                'terminal-notifier',
+                '-title', 'NASA APOD',
+                '-subtitle', title,
+                '-message', desc_short,
+                '-sound', 'default'
+            ], check=True, capture_output=True)
+            return
+        except FileNotFoundError:
+            # Fall back to AppleScript if terminal-notifier not installed
+            pass
+
+        # Fallback: AppleScript notification
+        title_escaped = title.replace('"', '\\"').replace("'", "\\'")
+        desc_escaped = desc_short.replace('"', '\\"').replace("'", "\\'")
+        script = f'''
+        display notification "{desc_escaped}" with title "NASA APOD" subtitle "{title_escaped}"
+        '''
+        subprocess.run(['osascript', '-e', script], check=True)
+    except Exception as e:
+        # Don't fail if notification fails
+        print(f"Note: Could not send notification: {e}")
+
+
 def cleanup_old_images(keep_count=30):
     """Remove old APOD images, keeping only the most recent ones"""
     try:
@@ -233,6 +272,11 @@ def main():
 
     # Set as wallpaper
     set_macos_wallpaper(image_path)
+
+    # Send notification with APOD details
+    title = apod_data.get('title', 'NASA APOD')
+    description = apod_data.get('explanation', '')
+    send_notification(title, description)
 
     # Clean up old images (keep last 30)
     cleanup_old_images(keep_count=30)
