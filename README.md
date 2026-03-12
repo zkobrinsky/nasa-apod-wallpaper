@@ -11,6 +11,7 @@ Automatically set NASA's Astronomy Picture of the Day as your macOS desktop wall
 - 💻 Automatically sets as macOS desktop background
 - 📅 Can fetch images from specific dates
 - ⏰ Optional daily auto-update via LaunchAgent
+- 🧹 Auto-cleanup keeps only the last 30 wallpapers
 - 📝 Shows image title and description
 
 ## Quick Start
@@ -86,6 +87,8 @@ export NASA_API_KEY="your_key_here"
 - **Downloaded images**: `~/.nasa_apod_wallpapers/`
 - **Configuration**: `~/.nasa_apod_wallpapers/config.json`
 - **Logs**: `~/.nasa_apod_wallpapers/apod.log`
+
+**Note:** The script automatically keeps only the 30 most recent wallpapers to save disk space.
 
 ## Uninstall
 

@@ -130,6 +130,36 @@ def set_macos_wallpaper(image_path):
         sys.exit(1)
 
 
+def cleanup_old_images(keep_count=30):
+    """Remove old APOD images, keeping only the most recent ones"""
+    try:
+        # Find all APOD image files
+        image_files = list(WALLPAPER_DIR.glob("apod_*.jpg")) + \
+                      list(WALLPAPER_DIR.glob("apod_*.png"))
+
+        if len(image_files) <= keep_count:
+            return  # Nothing to clean up
+
+        # Sort by modification time (newest first)
+        image_files.sort(key=lambda f: f.stat().st_mtime, reverse=True)
+
+        # Delete older files beyond keep_count
+        files_to_delete = image_files[keep_count:]
+        deleted_count = 0
+
+        for old_file in files_to_delete:
+            try:
+                old_file.unlink()
+                deleted_count += 1
+            except Exception as e:
+                print(f"Warning: Could not delete {old_file.name}: {e}")
+
+        if deleted_count > 0:
+            print(f"\nCleaned up {deleted_count} old wallpaper(s)")
+    except Exception as e:
+        print(f"Warning: Error during cleanup: {e}")
+
+
 def main():
     print("=" * 60)
     print("NASA Astronomy Picture of the Day - Wallpaper Setter")
@@ -173,6 +203,9 @@ def main():
 
     # Set as wallpaper
     set_macos_wallpaper(image_path)
+
+    # Clean up old images (keep last 30)
+    cleanup_old_images(keep_count=30)
 
     print("\n" + "=" * 60)
     print("Description:")
